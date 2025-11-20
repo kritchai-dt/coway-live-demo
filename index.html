@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Coway Live Iframe Version</title>
+<title>Coway Live Plugin Version</title>
+
+<!-- Shoplive Plugin Script -->
+<script src="https://cdn.shoplive.cloud/web/shoplive.js"></script>
 
 <style>
   body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f3f3f3;
+    font-family: sans-serif;
+    background: #f4f4f4;
   }
 
   .layout {
@@ -19,44 +22,19 @@
   }
 
   .left-panel {
-    background: white;
     padding: 24px;
-    overflow-y: auto;
-    border-right: 1px solid #e5e5e5;
-  }
-
-  .center-panel {
-    background: #000;
-    border-right: 1px solid #e5e5e5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-  }
-
-  .right-panel {
     background: white;
-    overflow-y: auto;
-    border-left: 1px solid #e5e5e5;
+    border-right: 1px solid #ddd;
   }
 
-  iframe {
+  .center-panel, .right-panel {
+    background: #fff;
+    border-right: 1px solid #ddd;
+  }
+
+  #player-area, #product-area {
     width: 100%;
     height: 100%;
-    border: none;
-  }
-
-  .live-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 12px;
-  }
-
-  .live-desc {
-    font-size: 15px;
-    color: #333;
-    line-height: 1.5;
-    white-space: pre-line;
   }
 </style>
 </head>
@@ -65,34 +43,35 @@
 
 <div class="layout">
 
-  <!-- LEFT COLUMN -->
+  <!-- Left -->
   <div class="left-panel">
-    <div class="live-title">Coway Live Commerce</div>
-    <div class="live-desc">
-โปรโมชั่นพิเศษประจำเดือน  
-ลดจัดหนักทั่วไทย  
-ดีลแรงที่สุดของปี  
-อย่าลืมติดตามรายการสดของ Coway!
-    </div>
+    <h2>Coway Live Commerce</h2>
+    <p>โปรโมชั่นพิเศษประจำเดือน<br>ลดจัดหนักทั่วไทย<br>ดีลแรงที่สุดของปี</p>
   </div>
 
-  <!-- CENTER COLUMN (LIVE PLAYER) -->
+  <!-- Center: Player -->
   <div class="center-panel">
-    <iframe 
-      src="https://in-app.shoplive.cloud/embed/7e42a2f7d275"
-      allowfullscreen>
-    </iframe>
+    <div id="player-area"></div>
   </div>
 
-  <!-- RIGHT COLUMN (PRODUCT LIST / CUSTOM SECTION) -->
+  <!-- Right: Product List -->
   <div class="right-panel">
-    <iframe 
-      src="https://in-app.shoplive.cloud/embed/7e42a2f7d275?view=product"
-      allowfullscreen>
-    </iframe>
+    <div id="product-area"></div>
   </div>
 
 </div>
+
+<script defer>
+  // แสดง Player
+  cloud.shoplive.setPlayer("player-area", {
+    campaignKey: "7e42a2f7d275"
+  });
+
+  // แสดง Product List (ถ้าเปิดใช้ในบัญชี)
+  cloud.shoplive.setProduct("product-area", {
+    campaignKey: "7e42a2f7d275"
+  });
+</script>
 
 </body>
 </html>
