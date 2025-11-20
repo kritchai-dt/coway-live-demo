@@ -2,18 +2,23 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Shoplive Player Test</title>
-  <script src="https://cdn.shoplive.cloud/web/shoplive.js"></script>
+  <title>Shoplive Test</title>
+
+  <!-- ใช้ script ตัวที่ถูกต้องตามเอกสาร -->
+  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
+
+  <script>
+    cloud.shoplive.init({ accessKey: 'Bnh7fCrVX2SAmIYaqMxM' });
+  </script>
 </head>
+
 <body>
 
-<div id="shoplive-player"></div>
+  <div id="shoplive-overall-area"></div>
 
-<script defer>
-  cloud.shoplive.setPlayer("shoplive-player", { 
-    campaignKey: "7e42a2f7d275" 
-  });
-</script>
+  <script defer>
+    cloud.shoplive.setOverall('shoplive-overall-area');
+  </script>
 
 </body>
 </html>
