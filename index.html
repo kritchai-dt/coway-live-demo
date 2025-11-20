@@ -1,75 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Coway Live Plugin Version</title>
-
-<!-- Shoplive Plugin Script -->
-<script src="https://cdn.shoplive.cloud/web/shoplive.js"></script>
-
-<style>
-  body {
-    margin: 0;
-    font-family: sans-serif;
-    background: #f4f4f4;
-  }
-
-  .layout {
-    display: grid;
-    grid-template-columns: 300px 1fr 350px;
-    height: 100vh;
-  }
-
-  .left-panel {
-    padding: 24px;
-    background: white;
-    border-right: 1px solid #ddd;
-  }
-
-  .center-panel, .right-panel {
-    background: #fff;
-    border-right: 1px solid #ddd;
-  }
-
-  #player-area, #product-area {
-    width: 100%;
-    height: 100%;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Shoplive Player Test</title>
+  <script src="https://cdn.shoplive.cloud/web/shoplive.js"></script>
 </head>
-
 <body>
 
-<div class="layout">
-
-  <!-- Left -->
-  <div class="left-panel">
-    <h2>Coway Live Commerce</h2>
-    <p>โปรโมชั่นพิเศษประจำเดือน<br>ลดจัดหนักทั่วไทย<br>ดีลแรงที่สุดของปี</p>
-  </div>
-
-  <!-- Center: Player -->
-  <div class="center-panel">
-    <div id="player-area"></div>
-  </div>
-
-  <!-- Right: Product List -->
-  <div class="right-panel">
-    <div id="product-area"></div>
-  </div>
-
-</div>
+<div id="shoplive-player"></div>
 
 <script defer>
-  // แสดง Player
-  cloud.shoplive.setPlayer("player-area", {
-    campaignKey: "7e42a2f7d275"
-  });
-
-  // แสดง Product List (ถ้าเปิดใช้ในบัญชี)
-  cloud.shoplive.setProduct("product-area", {
-    campaignKey: "7e42a2f7d275"
+  cloud.shoplive.setPlayer("shoplive-player", { 
+    campaignKey: "7e42a2f7d275" 
   });
 </script>
 
