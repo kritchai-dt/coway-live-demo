@@ -2,33 +2,57 @@
   <head>
     <title>Shoplive - Simple Shoplive Plugin example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, shrink-to-fit=no" />
+
     <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
-		<script>cloud.shoplive.init({ accessKey: 'Bnh7fCrVX2SAmlYaqMxM' });</script>
+    <script>
+      cloud.shoplive.init({ accessKey: 'Bnh7fCrVX2SAmlYaqMxM' });
+    </script>
 
     <style>
-      html,
       body {
         margin: 0;
         padding: 0;
         background-color: #333;
+        font-family: 'Arial', sans-serif;
       }
-      #shoplive-player {
-        max-width: calc(100vh / 16 * 9 - 2px);
-        margin: auto;
+
+      /* ปรับสีเฉพาะ text ที่อยู่นอก Shoplive */
+      #page-text {
+        color: #ffffff;
+        text-shadow: 0px 0px 8px rgba(0,0,0,0.6);
+        padding: 32px;
+        max-width: 600px;
       }
-      @media screen and (max-width: 480px) {
-        #shoplive-player {
-          max-width: 100%;
-        }
+
+      #page-text h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 12px;
       }
-      #shoplive-overall-area * {
-        color: #ffffff !important;
-        text-shadow: 0px 0px 6px rgba(0,0,0,0.6) !important;
+
+      #page-text p {
+        font-size: 18px;
+        line-height: 1.6;
+        margin: 4px 0;
       }
     </style>
   </head>
+
   <body>
+
+    <!-- ข้อความของคุณ (อยู่ “นอก” Shoplive) -->
+    <div id="page-text">
+      <h1>Coway Live Commerce Demo</h1>
+      <p>ถ่ายทอดสด Coway Special Live</p>
+      <p>โปรโมชั่นพิเศษจาก Coway ดีลแรงที่สุดของปี</p>
+      <p>โปรดติดตามสินค้าใน LIVE และสิทธิประโยชน์ต่างๆ</p>
+    </div>
+
+    <!-- Shoplive Player -->
     <div id="shoplive-overall-area"></div>
-		<script defer>cloud.shoplive.setOverall('shoplive-overall-area');</script>
+    <script defer>
+      cloud.shoplive.setOverall('shoplive-overall-area');
+    </script>
+
   </body>
 </html>
