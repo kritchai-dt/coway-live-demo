@@ -44,10 +44,21 @@
   </script>
 
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-    }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #CFE3F3;
+      }
+      #shoplive-player {
+        max-width: calc(100vh / 16 * 9 - 2px);
+        margin: auto;
+      }
+      @media screen and (max-width: 480px) {
+        #shoplive-player {
+          max-width: 100%;
+        }
+      }
   </style>
 
 </head>
