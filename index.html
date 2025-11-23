@@ -1,79 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Coway Live Commerce</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Shoplive SDK -->
-  <script src="https://static.shoplive.cloud/shoplive.js"></script>
+  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
 
-  <!-- GA4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
   <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-NQKVZQB0NN');
-  </script>
-
-  <style>
-    body { margin:0; padding:0; }
-  </style>
-</head>
-
-<body>
-
-<div id="shoplive-player"></div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-
-    const params = new URLSearchParams(window.location.search);
-    const campaignKey = params.get("campaignKey");
-
-    // ป้องกัน blank page หากไม่ส่ง campaignKey
-    if (!campaignKey) {
-      document.body.innerHTML = "<h3 style='padding:40px'>campaignKey is missing in URL</h3>";
-      return;
-    }
-
-    // Init Shoplive
+    // ใส่ AccessKey จริงของคุณ
     cloud.shoplive.init({
       accessKey: "Bnh7fCrVX2SAmlYaqMxM"
     });
 
-    // Load player
-    cloud.shoplive.setPlayer("shoplive-player", { campaignKey });
+    // อ่านทุก query parameter ที่มี (แต่ไม่บังคับ)
+    const params = new URLSearchParams(window.location.search);
 
-    // Tracking click + redirect
-    cloud.shoplive.setMessageCallback((event) => {
-      if (event.type === "productClick") {
+    const trackingData = {
+      utm_source: params.get("utm_source"),
+      utm_medium: params.get("utm_medium"),
+      utm_campaign: params.get("utm_campaign"),
+      broadcastId: params.get("broadcastId"),
+      orderCallBackId: params.get("orderCallBackId")
+    };
 
-        const productUrl = event.data.url;
-        const bId = event.data.broadcastId;
-        const ocId = event.data.orderCallbackId;
+    // ส่งเข้า GA4 (ถ้ามีค่าจริง)
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
 
-        const redirectUrl =
-          `${productUrl}?utm_source=shoplive` +
-          `&utm_medium=livecommerce` +
-          `&utm_campaign=coway_live` +
-          `&broadcastId=${bId}` +
-          `&orderCallBackId=${ocId}`;
+    gtag("event", "livecommerce_pageview", trackingData);
 
-        gtag("event", "shoplive_product_click", {
-          product_id: event.data.productId,
-          broadcast_id: bId,
-          order_callback_id: ocId,
-          redirect: redirectUrl
-        });
-
-        window.location.href = redirectUrl;
-      }
+    // แสดง Player + List แบบ DEFAULT UI ของ Shoplive
+    window.addEventListener("DOMContentLoaded", () => {
+      cloud.shoplive.setOverall("shoplive-overall-area");
     });
+  </script>
 
-  });
-</script>
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
+  <script>
+    gtag("js", new Date());
+    gtag("config", "G-NQKVZQB0NN");
+  </script>
 
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="shoplive-overall-area"></div>
 </body>
 </html>
