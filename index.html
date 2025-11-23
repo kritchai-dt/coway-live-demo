@@ -1,29 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Coway Live Commerce Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, shrink-to-fit=no" />
-    <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
-        <script>cloud.shoplive.init({ accessKey: 'Bnh7fCrVX2SAmlYaqMxM' });</script>
+  <meta charset="UTF-8" />
+  <title>Coway Live Commerce</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: #CFE3F3;
-      }
-      #shoplive-player {
-        max-width: calc(100vh / 16 * 9 - 2px);
-        margin: auto;
-      }
-      @media screen and (max-width: 480px) {
-        #shoplive-player {
-          max-width: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="shoplive-overall-area"></div>
-        <script defer>cloud.shoplive.setOverall('shoplive-overall-area');</script>
-  </body>
+  <!-- Shoplive SDK -->
+  <script src="https://static.shoplive.cloud/shoplive.js"></script>
+
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-NQKVZQB0NN');
+  </script>
+
+  <style>
+    body { margin:0; padding:0; }
+  </style>
+</head>
+
+<body>
+
+<!-- ONLY THIS — Shoplive UI renders inside -->
+<div id="shoplive-player"></div>
+
+<script>
+  // Read URL params
+  const params = new URLSearchParams(window.location.search);
+
+  const campaignKey = params.get("campaignKey");
+  const utm_source = params.get("utm_source");
+  const utm_medium = params.get("utm_medium");
+  const utm_campaign = params.get("utm_campaign");
+  const broadcastId = params.get("broadcastId");
+  const orderCallBackId = params.get("orderCallBackId");
+
+  // GA4 page event
+  gtag("event", "shoplive_page_open", {
+    campaign_key: campaignKey,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    broadcastId,
+    orderCallBackId
+  });
+
+  // Init Shoplive
+  cloud.shoplive.init({
+    accessKey: "Bnh7fCrVX2SAmlYaqMxM"
+  });
+
+  // Load player with campaign key
+  cloud.shoplive.setPlayer("shoplive-player", { campaignKey });
+
+  // Track product click + UTM redirect
+  cloud.shoplive.setMessageCallback((event) => {
+    if (event.type === "productClick") {
+
+      const productUrl = event.data.url;
+      const productId = event.data.productId;
+      const bId = event.data.broadcastId;
+      const ocId = event.data.orderCallbackId;
+
+      // Construct redirect URL
+      const redirectUrl =
+        `${productUrl}?utm_source=shoplive` +
+        `&utm_medium=livecommerce` +
+        `&utm_campaign=coway_live` +
+        `&broadcastId=${bId}` +
+        `&orderCallBackId=${ocId}`;
+
+      // GA4 click tracking
+      gtag("event", "shoplive_product_click", {
+        product_id: productId,
+        broadcast_id: bId,
+        order_callback_id: ocId,
+        redirect: redirectUrl
+      });
+
+      // Redirect to Coway Mall
+      window.location.href = redirectUrl;
+    }
+  });
+</script>
+
+</body>
 </html>
