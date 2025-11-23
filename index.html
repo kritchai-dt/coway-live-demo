@@ -1,30 +1,127 @@
-<html>
-  <head>
-    <title>Coway Live Commerce Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, shrink-to-fit=no" />
-    <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
-		<script>cloud.shoplive.init({ accessKey: 'Bnh7fCrVX2SAmlYaqMxM' });</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coway Live Commerce (Universal)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: #CFE3F3;
-      }
-      #shoplive-player {
-        max-width: calc(100vh / 16 * 9 - 2px);
-        margin: auto;
-      }
-      @media screen and (max-width: 480px) {
-        #shoplive-player {
-          max-width: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="shoplive-overall-area"></div>
-		<script defer>cloud.shoplive.setOverall('shoplive-overall-area');</script>
-  </body>
+  <!-- Shoplive SDK -->
+  <script src="https://static.shoplive.cloud/shoplive.js"></script>
+
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-NQKVZQB0NN');
+  </script>
+
+  <style>
+    body { margin:0; font-family:Arial; }
+    #layout { display:flex; height:100vh; }
+    #left { width:40%; padding:40px; background:#fff; overflow:auto; }
+    #right { width:60%; background:#fafafa; display:flex; justify-content:center; align-items:center; }
+    #shoplive-player { width:100%; max-width:420px; }
+  </style>
+</head>
+
+<body>
+
+<div id="layout">
+  <!-- LEFT SECTION -->
+  <div id="left">
+      <h1>Coway Live Commerce</h1>
+      <p>Live Commerce Universal Page</p>
+
+      <h3>Debug Info</h3>
+      <div id="debug-box" style="padding:20px;border:1px solid #ccc;background:#f7f7f7"></div>
+  </div>
+
+  <!-- RIGHT SECTION -->
+  <div id="right">
+      <div id="shoplive-player"></div>
+  </div>
+</div>
+
+
+<script>
+  // ------------------------------
+  // READ URL PARAMETERS
+  // ------------------------------
+  const params = new URLSearchParams(window.location.search);
+
+  const campaignKey = params.get("campaignKey");
+  const utm_source = params.get("utm_source");
+  const utm_medium = params.get("utm_medium");
+  const utm_campaign = params.get("utm_campaign");
+  const broadcastId = params.get("broadcastId");
+  const orderCallBackId = params.get("orderCallBackId");
+
+  // Debug Display
+  document.getElementById("debug-box").innerHTML = `
+    <p><b>campaignKey:</b> ${campaignKey}</p>
+    <p><b>utm_source:</b> ${utm_source}</p>
+    <p><b>utm_medium:</b> ${utm_medium}</p>
+    <p><b>utm_campaign:</b> ${utm_campaign}</p>
+    <p><b>broadcastId:</b> ${broadcastId}</p>
+    <p><b>orderCallBackId:</b> ${orderCallBackId}</p>
+  `;
+
+  // GA4 Page Event
+  gtag("event", "shoplive_page_open", {
+    campaign_key: campaignKey,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    broadcastId,
+    orderCallBackId
+  });
+
+  // ------------------------------
+  // INIT SHOPLIVE
+  // ------------------------------
+  cloud.shoplive.init({
+    accessKey: "Bnh7fCrVX2SAmlYaqMxM"
+  });
+
+  // ------------------------------
+  // LOAD PLAYER WITH CAMPAIGN KEY
+  // ------------------------------
+  cloud.shoplive.setPlayer("shoplive-player", { campaignKey });
+
+  // ------------------------------
+  // HANDLE PRODUCT CLICK
+  // ------------------------------
+  cloud.shoplive.setMessageCallback((event) => {
+    if (event.type === "productClick") {
+
+      const productUrl = event.data.url;
+      const productId = event.data.productId;
+      const bId = event.data.broadcastId;
+      const ocId = event.data.orderCallbackId;
+
+      // Generate Redirect URL with UTM
+      const redirectUrl =
+        `${productUrl}?utm_source=shoplive` +
+        `&utm_medium=livecommerce` +
+        `&utm_campaign=coway_live` +
+        `&broadcastId=${bId}` +
+        `&orderCallBackId=${ocId}`;
+
+      // GA4 Event
+      gtag("event", "shoplive_product_click", {
+        product_id: productId,
+        broadcast_id: bId,
+        order_callback_id: ocId,
+        redirect: redirectUrl
+      });
+
+      // Redirect to PDP
+      window.location.href = redirectUrl;
+    }
+  });
+</script>
+
+</body>
 </html>
