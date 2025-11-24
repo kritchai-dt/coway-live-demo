@@ -22,69 +22,65 @@
 
   <style>
     html, body {
-      margin: 0;
       padding: 0;
+      margin: 0;
       background-color: #CFE3F3;
       height: 100%;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
     #shoplive-overall-area {
       display: block;
     }
-
-    /* hidden activator button */
-    #wake-btn {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      z-index: 9999;
-    }
   </style>
-
 </head>
-<body>
 
-  <!-- hidden button that receives first interaction -->
-  <button id="wake-btn"></button>
+<body>
 
   <div id="shoplive-overall-area"></div>
 
   <script>
-    // Init Shoplive
+    /* Init Shoplive */
     cloud.shoplive.init({
       accessKey: "Bnh7fCrVX2SAmlYaqMxM"
     });
 
-    // Render UI
+    /* Render default UI */
     window.addEventListener("DOMContentLoaded", () => {
       cloud.shoplive.setOverall("shoplive-overall-area");
     });
 
-    // UTM tracking
+    /* Read UTM params */
     const params = new URLSearchParams(window.location.search);
-    gtag("event", "livecommerce_pageview", {
+    const trackingData = {
       utm_source: params.get("utm_source"),
       utm_medium: params.get("utm_medium"),
       utm_campaign: params.get("utm_campaign"),
       broadcastId: params.get("broadcastId"),
       orderCallBackId: params.get("orderCallBackId")
-    });
+    };
+    gtag("event", "livecommerce_pageview", trackingData);
 
-    // NoSleep activation
-    const noSleep = new NoSleep();
-    const wakeBtn = document.getElementById("wake-btn");
+    /* Detect mobile device */
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    function enableWakeLock() {
-      noSleep.enable();
-      wakeBtn.style.display = "none";
+    /* NoSleep only for Mobile */
+    let noSleep;
+    if (isMobile) {
+      noSleep = new NoSleep();
+
+      cloud.shoplive.on("PLAY", () => {
+        try { noSleep.enable(); } catch(e) {}
+      });
+
+      cloud.shoplive.on("PAUSE", () => {
+        try { noSleep.disable(); } catch(e) {}
+      });
+
+      cloud.shoplive.on("ENDED", () => {
+        try { noSleep.disable(); } catch(e) {}
+      });
     }
-
-    wakeBtn.addEventListener("click", enableWakeLock);
-    wakeBtn.addEventListener("touchstart", enableWakeLock);
   </script>
 
 </body>
