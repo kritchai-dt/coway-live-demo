@@ -4,15 +4,6 @@
   <meta charset="UTF-8">
   <title>Coway Live Commerce</title>
 
-  <!-- Responsive Viewport -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-
-  <!-- Shoplive SDK -->
-  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
-
-  <!-- NoSleep.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/noSleep/0.12.0/NoSleep.min.js"></script>
-
   <!-- GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
   <script>
@@ -22,6 +13,12 @@
     gtag("config", "G-NQKVZQB0NN");
   </script>
 
+  <!-- Shoplive SDK -->
+  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
+
+  <!-- NoSleep.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/no-sleep/0.12.0/NoSleep.min.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -30,58 +27,48 @@
     }
     #shoplive-overall-area {
       width: 100%;
-      max-width: 100%;
+      height: auto;
     }
   </style>
+</head>
+
+<body>
+
+  <div id="shoplive-overall-area"></div>
 
   <script>
-    //---------------------------------------------------------
-    // 1) Init Shoplive
-    //---------------------------------------------------------
+    // Init Shoplive
     cloud.shoplive.init({
       accessKey: "Bnh7fCrVX2SAmlYaqMxM"
     });
 
-    //---------------------------------------------------------
-    // 2) Read tracking parameters
-    //---------------------------------------------------------
-    const params = new URLSearchParams(window.location.search);
+    // Render default UI
+    window.addEventListener("DOMContentLoaded", () => {
+      cloud.shoplive.setOverall("shoplive-overall-area");
+    });
 
+    // Tracking UTM (optional)
+    const params = new URLSearchParams(window.location.search);
     const trackingData = {
-      campaignKey: params.get("campaignKey"),
       utm_source: params.get("utm_source"),
       utm_medium: params.get("utm_medium"),
       utm_campaign: params.get("utm_campaign"),
       broadcastId: params.get("broadcastId"),
       orderCallBackId: params.get("orderCallBackId")
     };
-
     gtag("event", "livecommerce_pageview", trackingData);
 
-    //---------------------------------------------------------
-    // 3) Enable NoSleep.js after first user interaction
-    //---------------------------------------------------------
+    // Enable NoSleep only when user interacts
     const noSleep = new NoSleep();
-
-    function enableNoSleep() {
+    function enableWakeLock() {
       noSleep.enable();
-      console.log("✅ NoSleep enabled – screen will stay awake");
+      document.removeEventListener("click", enableWakeLock);
+      document.removeEventListener("touchstart", enableWakeLock);
     }
 
-    // iOS requires user gesture → enable on first tap anywhere
-    document.addEventListener("click", enableNoSleep, { once: true });
-
-    //---------------------------------------------------------
-    // 4) Render Shoplive UI (default responsive)
-    //---------------------------------------------------------
-    window.addEventListener("DOMContentLoaded", () => {
-      cloud.shoplive.setOverall("shoplive-overall-area");
-    });
+    document.addEventListener("click", enableWakeLock, false);
+    document.addEventListener("touchstart", enableWakeLock, false);
   </script>
 
-</head>
-
-<body>
-  <div id="shoplive-overall-area"></div>
 </body>
 </html>
