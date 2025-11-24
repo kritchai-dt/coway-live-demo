@@ -1,29 +1,69 @@
+<!DOCTYPE html>
+<html>
 <head>
-    <title>Coway Live Commerce Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, shrink-to-fit=no" />
-    <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
-    <script>cloud.shoplive.init({ accessKey: 'Bnh7fCrVX2SAmlYaqMxM' });</script>
+  <meta charset="UTF-8">
+  <title>Coway Live Commerce</title>
 
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: #CFE3F3;
-      }
-      #shoplive-player {
-        max-width: calc(100vh / 16 * 9 - 2px);
-        margin: auto;
-      }
-      @media screen and (max-width: 480px) {
-        #shoplive-player {
-          max-width: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="shoplive-overall-area"></div>
-    <script defer>cloud.shoplive.setOverall('shoplive-overall-area');</script>
-  </body>
+  <!-- Responsive Viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <!-- Shoplive SDK -->
+  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
+
+  <script>
+    // Init Shoplive with Access Key
+    cloud.shoplive.init({
+      accessKey: "Bnh7fCrVX2SAmlYaqMxM"
+    });
+
+    // Read tracking parameters (optional)
+    const params = new URLSearchParams(window.location.search);
+
+    const trackingData = {
+      campaignKey: params.get("campaignKey"),
+      utm_source: params.get("utm_source"),
+      utm_medium: params.get("utm_medium"),
+      utm_campaign: params.get("utm_campaign"),
+      broadcastId: params.get("broadcastId"),
+      orderCallBackId: params.get("orderCallBackId")
+    };
+
+    // GA4 Push
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+
+    gtag("event", "livecommerce_pageview", trackingData);
+
+    // Render Shoplive default UI (auto responsive)
+    window.addEventListener("DOMContentLoaded", () => {
+      cloud.shoplive.setOverall("shoplive-overall-area");
+    });
+  </script>
+
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
+  <script>
+    gtag("js", new Date());
+    gtag("config", "G-NQKVZQB0NN");
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #CFE3F3;
+    }
+
+    /* ✅ Allow full responsive scaling */
+    #shoplive-overall-area {
+      width: 100%;
+      max-width: 100%;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="shoplive-overall-area"></div>
+</body>
 </html>
