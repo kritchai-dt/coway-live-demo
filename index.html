@@ -10,6 +10,9 @@
   <!-- Shoplive SDK -->
   <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
 
+  <!-- NoSleep.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/noSleep/0.12.0/NoSleep.min.js"></script>
+
   <!-- GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
   <script>
@@ -40,7 +43,7 @@
     });
 
     //---------------------------------------------------------
-    // 2) Read tracking params & send to GA4
+    // 2) Read tracking parameters
     //---------------------------------------------------------
     const params = new URLSearchParams(window.location.search);
 
@@ -56,40 +59,23 @@
     gtag("event", "livecommerce_pageview", trackingData);
 
     //---------------------------------------------------------
-    // 3) Screen Wake Lock (prevent screen sleep)
+    // 3) Enable NoSleep.js after first user interaction
     //---------------------------------------------------------
-    let wakeLock = null;
+    const noSleep = new NoSleep();
 
-    async function requestWakeLock() {
-      try {
-        if ("wakeLock" in navigator) {
-          wakeLock = await navigator.wakeLock.request("screen");
-          console.log("✅ Wake Lock enabled");
-
-          wakeLock.addEventListener("release", () => {
-            console.log("🔄 Wake Lock released, requesting again…");
-            requestWakeLock();
-          });
-        } else {
-          console.log("⚠️ Wake Lock API not supported on this device");
-        }
-      } catch (err) {
-        console.warn("Wake Lock error:", err);
-      }
+    function enableNoSleep() {
+      noSleep.enable();
+      console.log("✅ NoSleep enabled – screen will stay awake");
     }
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
-        requestWakeLock();
-      }
-    });
+    // iOS requires user gesture → enable on first tap anywhere
+    document.addEventListener("click", enableNoSleep, { once: true });
 
     //---------------------------------------------------------
     // 4) Render Shoplive UI (default responsive)
     //---------------------------------------------------------
     window.addEventListener("DOMContentLoaded", () => {
       cloud.shoplive.setOverall("shoplive-overall-area");
-      requestWakeLock();
     });
   </script>
 
