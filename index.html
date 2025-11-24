@@ -1,49 +1,10 @@
-<!DOCTYPE html>
-<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Coway Live Commerce</title>
+    <title>Coway Live Commerce Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, shrink-to-fit=no" />
+    <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
+    <script>cloud.shoplive.init({ accessKey: 'Bnh7fCrVX2SAmlYaqMxM' });</script>
 
-  <!-- Shoplive SDK -->
-  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
-
-  <script>
-    // ใส่ AccessKey จริงของคุณ
-    cloud.shoplive.init({
-      accessKey: "Bnh7fCrVX2SAmlYaqMxM"
-    });
-
-    // อ่านทุก query parameter ที่มี (แต่ไม่บังคับ)
-    const params = new URLSearchParams(window.location.search);
-
-    const trackingData = {
-      utm_source: params.get("utm_source"),
-      utm_medium: params.get("utm_medium"),
-      utm_campaign: params.get("utm_campaign"),
-      broadcastId: params.get("broadcastId"),
-      orderCallBackId: params.get("orderCallBackId")
-    };
-
-    // ส่งเข้า GA4 (ถ้ามีค่าจริง)
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-
-    gtag("event", "livecommerce_pageview", trackingData);
-
-    // แสดง Player + List แบบ DEFAULT UI ของ Shoplive
-    window.addEventListener("DOMContentLoaded", () => {
-      cloud.shoplive.setOverall("shoplive-overall-area");
-    });
-  </script>
-
-  <!-- GA4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQKVZQB0NN"></script>
-  <script>
-    gtag("js", new Date());
-    gtag("config", "G-NQKVZQB0NN");
-  </script>
-
-  <style>
+    <style>
       html,
       body {
         margin: 0;
@@ -59,11 +20,10 @@
           max-width: 100%;
         }
       }
-  </style>
-
-</head>
-
-<body>
-  <div id="shoplive-overall-area"></div>
-</body>
+    </style>
+  </head>
+  <body>
+    <div id="shoplive-overall-area"></div>
+    <script defer>cloud.shoplive.setOverall('shoplive-overall-area');</script>
+  </body>
 </html>
