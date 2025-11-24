@@ -29,7 +29,9 @@
       overflow-x: hidden;
     }
 
+    /* DEFAULT shoplive responsive behavior */
     #shoplive-overall-area {
+      width: 100%;
       display: block;
     }
   </style>
@@ -37,6 +39,7 @@
 
 <body>
 
+  <!-- Shoplive container -->
   <div id="shoplive-overall-area"></div>
 
   <script>
@@ -50,7 +53,7 @@
       cloud.shoplive.setOverall("shoplive-overall-area");
     });
 
-    /* Read UTM params */
+    /* Read Tracking Params */
     const params = new URLSearchParams(window.location.search);
     const trackingData = {
       utm_source: params.get("utm_source"),
@@ -61,26 +64,36 @@
     };
     gtag("event", "livecommerce_pageview", trackingData);
 
-    /* Detect mobile device */
+    /* Detect mobile */
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    /* NoSleep only for Mobile */
+    /* NoSleep only for mobile */
+    let noSleepEnabled = false;
     let noSleep;
+
     if (isMobile) {
       noSleep = new NoSleep();
 
-      cloud.shoplive.on("PLAY", () => {
-        try { noSleep.enable(); } catch(e) {}
-      });
+      function enableNoSleep() {
+        if (!noSleepEnabled) {
+          noSleep.enable();
+          noSleepEnabled = true;
+        }
+      }
 
-      cloud.shoplive.on("PAUSE", () => {
-        try { noSleep.disable(); } catch(e) {}
-      });
+      /* require a user gesture */
+      document.addEventListener("touchstart", enableNoSleep, { once: true });
+      document.addEventListener("click", enableNoSleep, { once: true });
 
+      /* disable when playback ends */
       cloud.shoplive.on("ENDED", () => {
-        try { noSleep.disable(); } catch(e) {}
+        if (noSleepEnabled) {
+          noSleep.disable();
+          noSleepEnabled = false;
+        }
       });
     }
+
   </script>
 
 </body>
