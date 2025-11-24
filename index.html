@@ -22,22 +22,34 @@
 
   <style>
     html, body {
-      padding: 0;
       margin: 0;
+      padding: 0;
       background-color: #CFE3F3;
       height: 100%;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
-    /* ห้ามกำหนดขนาด container */
     #shoplive-overall-area {
       display: block;
+    }
+
+    /* hidden activator button */
+    #wake-btn {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      z-index: 9999;
     }
   </style>
 
 </head>
-
 <body>
+
+  <!-- hidden button that receives first interaction -->
+  <button id="wake-btn"></button>
 
   <div id="shoplive-overall-area"></div>
 
@@ -47,31 +59,32 @@
       accessKey: "Bnh7fCrVX2SAmlYaqMxM"
     });
 
-    // Render default UI
+    // Render UI
     window.addEventListener("DOMContentLoaded", () => {
       cloud.shoplive.setOverall("shoplive-overall-area");
     });
 
-    // Read UTM params
+    // UTM tracking
     const params = new URLSearchParams(window.location.search);
-    const trackingData = {
+    gtag("event", "livecommerce_pageview", {
       utm_source: params.get("utm_source"),
       utm_medium: params.get("utm_medium"),
       utm_campaign: params.get("utm_campaign"),
       broadcastId: params.get("broadcastId"),
       orderCallBackId: params.get("orderCallBackId")
-    };
-    gtag("event", "livecommerce_pageview", trackingData);
+    });
 
-    // Enable NoSleep after interaction
+    // NoSleep activation
     const noSleep = new NoSleep();
+    const wakeBtn = document.getElementById("wake-btn");
+
     function enableWakeLock() {
       noSleep.enable();
-      document.removeEventListener("click", enableWakeLock);
-      document.removeEventListener("touchstart", enableWakeLock);
+      wakeBtn.style.display = "none";
     }
-    document.addEventListener("click", enableWakeLock, false);
-    document.addEventListener("touchstart", enableWakeLock, false);
+
+    wakeBtn.addEventListener("click", enableWakeLock);
+    wakeBtn.addEventListener("touchstart", enableWakeLock);
   </script>
 
 </body>
