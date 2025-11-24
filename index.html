@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Coway Live Commerce</title>
 
   <!-- GA4 -->
@@ -20,16 +21,20 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/no-sleep/0.12.0/NoSleep.min.js"></script>
 
   <style>
-    body {
-      margin: 0;
+    html, body {
       padding: 0;
+      margin: 0;
       background-color: #CFE3F3;
+      height: 100%;
+      overflow-x: hidden;
     }
+
+    /* ห้ามกำหนดขนาด container */
     #shoplive-overall-area {
-      width: 100%;
-      height: auto;
+      display: block;
     }
   </style>
+
 </head>
 
 <body>
@@ -47,7 +52,7 @@
       cloud.shoplive.setOverall("shoplive-overall-area");
     });
 
-    // Tracking UTM (optional)
+    // Read UTM params
     const params = new URLSearchParams(window.location.search);
     const trackingData = {
       utm_source: params.get("utm_source"),
@@ -58,14 +63,13 @@
     };
     gtag("event", "livecommerce_pageview", trackingData);
 
-    // Enable NoSleep only when user interacts
+    // Enable NoSleep after interaction
     const noSleep = new NoSleep();
     function enableWakeLock() {
       noSleep.enable();
       document.removeEventListener("click", enableWakeLock);
       document.removeEventListener("touchstart", enableWakeLock);
     }
-
     document.addEventListener("click", enableWakeLock, false);
     document.addEventListener("touchstart", enableWakeLock, false);
   </script>
