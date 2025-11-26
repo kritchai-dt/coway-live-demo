@@ -29,7 +29,6 @@
       overflow-x: hidden;
     }
 
-    /* DEFAULT shoplive responsive behavior */
     #shoplive-overall-area {
       width: 100%;
       display: block;
@@ -39,35 +38,85 @@
 
 <body>
 
-  <!-- Shoplive container -->
   <div id="shoplive-overall-area"></div>
 
   <script>
-    /* Init Shoplive */
+    /* --------------------------------------
+       INIT SHOPLIVE
+    ----------------------------------------- */
     cloud.shoplive.init({
       accessKey: "Bnh7fCrVX2SAmlYaqMxM"
     });
 
-    /* Render default UI */
     window.addEventListener("DOMContentLoaded", () => {
       cloud.shoplive.setOverall("shoplive-overall-area");
     });
 
-    /* Read Tracking Params */
+    /* --------------------------------------
+       READ EXISTING UTM / CAMPAIGN PARAMETERS
+    ----------------------------------------- */
     const params = new URLSearchParams(window.location.search);
-    const trackingData = {
+    const entryTracking = {
       utm_source: params.get("utm_source"),
       utm_medium: params.get("utm_medium"),
       utm_campaign: params.get("utm_campaign"),
       broadcastId: params.get("broadcastId"),
       orderCallBackId: params.get("orderCallBackId")
     };
-    gtag("event", "livecommerce_pageview", trackingData);
 
-    /* Detect mobile */
+    gtag("event", "livecommerce_pageview", entryTracking);
+
+    /* --------------------------------------
+       PRODUCT CLICK TRACKING + DYNAMIC UTM BUILDER
+    ----------------------------------------- */
+
+    function buildProductTrackingURL(product) {
+      const url = new URL(product.url);
+
+      /* base utm */
+      url.searchParams.set("utm_source", "shoplive");
+      url.searchParams.set("utm_medium", "livecommerce");
+
+      /* campaign key from shoplive viewer */
+      url.searchParams.set("utm_campaign", product.campaignKey || "unknown");
+
+      /* pass through session broadcast/order id if we have */
+      if (entryTracking.broadcastId) {
+        url.searchParams.set("broadcastId", entryTracking.broadcastId);
+      }
+      if (entryTracking.orderCallBackId) {
+        url.searchParams.set("orderCallBackId", entryTracking.orderCallBackId);
+      }
+
+      return url.toString();
+    }
+
+    function trackProductClickGA4(product, destinationUrl) {
+      gtag("event", "live_product_click", {
+        product_name: product.name,
+        product_code: product.goodsId || product.code,
+        campaignKey: product.campaignKey,
+        destination: destinationUrl
+      });
+    }
+
+    cloud.shoplive.on("GOODS_CLICK", (product) => {
+      console.log("Product clicked:", product);
+
+      const finalUrl = buildProductTrackingURL(product);
+
+      /* GA4 event */
+      trackProductClickGA4(product, finalUrl);
+
+      /* redirect with utm */
+      window.location.href = finalUrl;
+    });
+
+    /* --------------------------------------
+       NoSleep: ENABLE ONLY ON MOBILE
+    ----------------------------------------- */
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    /* NoSleep only for mobile */
     let noSleepEnabled = false;
     let noSleep;
 
@@ -81,11 +130,10 @@
         }
       }
 
-      /* require a user gesture */
+      /* Run only when video is actually touched */
       document.addEventListener("touchstart", enableNoSleep, { once: true });
       document.addEventListener("click", enableNoSleep, { once: true });
 
-      /* disable when playback ends */
       cloud.shoplive.on("ENDED", () => {
         if (noSleepEnabled) {
           noSleep.disable();
@@ -93,7 +141,6 @@
         }
       });
     }
-
   </script>
 
 </body>
