@@ -108,9 +108,7 @@ const campaignKey = qs.get("campaignKey") || "";
    Build Coway Product URL
 ============================= */
 function buildCowayProductURL(productCode) {
-    if (!productCode) return null;
-
-    const slug = productCode.toLowerCase(); 
+    const slug = productCode.toLowerCase();
     return `https://www.coway.co.th/th/products/${slug}`;
 }
 
@@ -119,7 +117,6 @@ function buildCowayProductURL(productCode) {
 ============================= */
 function addUTM(url) {
     const u = new URL(url);
-    
     u.searchParams.set("utm_source", "livecommerce");
     u.searchParams.set("utm_medium", "shoplive");
     u.searchParams.set("utm_campaign", campaignKey || "live");
@@ -131,37 +128,43 @@ function addUTM(url) {
 }
 
 /* =============================
-   Hook Click on Shoplive Products
+   MutationObserver → จับสินค้าถูก render
 ============================= */
-document.addEventListener("click", (e) => {
-    const item = e.target.closest("li.wrap-displaying-goods");
+const observer = new MutationObserver(() => {
+    const items = document.querySelectorAll("li.wrap-displaying-goods");
 
-    if (!item) return;
+    items.forEach(item => {
+        if (item.dataset._trackingBound) return;
 
-    // Product Code from Shoplive DOM
-    const productCode = item.dataset.prdcode;
+        item.dataset._trackingBound = "true";
 
-    if (!productCode) {
-        console.warn("Shoplive item has no product code");
-        return;
-    }
+        item.addEventListener("click", e => {
+            e.preventDefault();
 
-    // Build URL
-    const baseURL = buildCowayProductURL(productCode);
-    const finalURL = addUTM(baseURL);
+            const prd = item.dataset.prdcode;
+            if (!prd) return;
 
-    e.preventDefault();
+            const base = buildCowayProductURL(prd);
+            const finalURL = addUTM(base);
 
-    console.log("Redirecting →", finalURL);
+            console.log("Redirect UTM →", finalURL);
 
-    gtag("event", "live_product_click", {
-        product_code: productCode,
-        final_url: finalURL,
-        broadcastId,
-        campaignKey
+            gtag("event", "live_product_click", {
+                product_code: prd,
+                final_url: finalURL,
+                broadcastId,
+                campaignKey
+            });
+
+            window.location.href = finalURL;
+        });
     });
+});
 
-    window.location.href = finalURL;
+/* เริ่มจับการเปลี่ยน DOM */
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
 });
 </script>
 
