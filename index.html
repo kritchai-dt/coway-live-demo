@@ -95,5 +95,55 @@
 
   </script>
 
+  <script>
+/* อ่านค่าจาก URL */
+const params = new URLSearchParams(window.location.search);
+const broadcastId = params.get("broadcastId") || "";
+const orderCallBackId = params.get("orderCallBackId") || "";
+const campaignKey = params.get("campaignKey") || "";
+
+/* ฟังก์ชันเพิ่ม UTM */
+function buildTrackedURL(original) {
+    const url = new URL(original);
+
+    url.searchParams.set("utm_source", "livecommerce");
+    url.searchParams.set("utm_medium", "shoplive");
+    url.searchParams.set("utm_campaign", campaignKey || "live");
+
+    if (broadcastId) url.searchParams.set("broadcastId", broadcastId);
+    if (orderCallBackId) url.searchParams.set("orderCallBackId", orderCallBackId);
+
+    return url.toString();
+}
+
+/* ดักคลิกสินค้าใน DOM */
+document.addEventListener("click", function(e) {
+    const target = e.target.closest("a");
+
+    if (!target) return;
+
+    // ตรวจสอบว่าเป็นสินค้า (Shoplive ใช้ CSS class ข้างล่าง)
+    if (target.classList.contains("shoplive-goods-item") ||
+        target.href.includes("coway.co.th/th/products")) {
+
+        e.preventDefault(); // กัน redirect เดิม
+
+        const finalUrl = buildTrackedURL(target.href);
+
+        console.log("Redirecting with UTM:", finalUrl);
+
+        // ส่ง GA4
+        gtag("event", "live_product_click", {
+            original_url: target.href,
+            final_url: finalUrl,
+            broadcastId: broadcastId,
+            campaignKey: campaignKey
+        });
+
+        window.location.href = finalUrl;
+    }
+});
+</script>
+
 </body>
 </html>
