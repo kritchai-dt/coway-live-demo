@@ -15,7 +15,7 @@
   </script>
 
   <!-- Shoplive SDK -->
-  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
+ <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
 
   <!-- NoSleep.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/no-sleep/0.12.0/NoSleep.min.js"></script>
@@ -40,66 +40,53 @@
 
   <div id="shoplive-overall-area"></div>
 
-  <script>
-
-cloud.shoplive.init({
-  accessKey: "Bnh7fCrVX2SAmlYaqMxM"
-});
-
-window.addEventListener("DOMContentLoaded", () => {
-  cloud.shoplive.setOverall("shoplive-overall-area");
-});
-
-/* READ PARAMS */
+<script>
+/* อ่านค่าจาก URL */
 const params = new URLSearchParams(window.location.search);
-const entry = {
-  broadcastId: params.get("broadcastId"),
-  orderCallBackId: params.get("orderCallBackId")
-};
+const broadcastId = params.get("broadcastId") || "";
+const orderCallBackId = params.get("orderCallBackId") || "";
+const campaignKey = params.get("campaignKey") || "";
 
-/* Build URL */
-function buildProductTrackingURL(product) {
-    const url = new URL(product.url);
+/* ฟังก์ชันเพิ่ม UTM */
+function buildTrackedURL(original) {
+    const url = new URL(original);
 
-    url.searchParams.set("utm_source", "shoplive");
-    url.searchParams.set("utm_medium", "livecommerce");
-    url.searchParams.set("utm_campaign", product.campaignKey || "unknown");
+    url.searchParams.set("utm_source", "livecommerce");
+    url.searchParams.set("utm_medium", "shoplive");
+    url.searchParams.set("utm_campaign", campaignKey || "live");
 
-    if (entry.broadcastId) {
-        url.searchParams.set("broadcastId", entry.broadcastId);
-    }
-    if (entry.orderCallBackId) {
-        url.searchParams.set("orderCallBackId", entry.orderCallBackId);
-    }
+    if (broadcastId) url.searchParams.set("broadcastId", broadcastId);
+    if (orderCallBackId) url.searchParams.set("orderCallBackId", orderCallBackId);
 
     return url.toString();
 }
 
-/* GA Tracking */
-function trackProductClickGA4(product, dest) {
-    gtag("event", "live_product_click", {
-        product_name: product.name,
-        product_code: product.goodsId || product.code,
-        campaignKey: product.campaignKey,
-        destination: dest
-    });
-}
+/* ดักคลิกสินค้าใน DOM */
+document.addEventListener("click", function(e) {
+    const target = e.target.closest("a");
 
-/* WAIT UNTIL SHOPLIVE UI IS READY */
-cloud.shoplive.on("UI_READY", () => {
+    if (!target) return;
 
-    console.log("Shoplive UI ready - binding product click tracking");
+    // ตรวจสอบว่าเป็นสินค้า (Shoplive ใช้ CSS class ข้างล่าง)
+    if (target.classList.contains("shoplive-goods-item") ||
+        target.href.includes("coway.co.th/th/products")) {
 
-    cloud.shoplive.on("GOODS_CLICK", (product) => {
-        console.log("Product clicked:", product);
+        e.preventDefault(); // กัน redirect เดิม
 
-        const finalUrl = buildProductTrackingURL(product);
+        const finalUrl = buildTrackedURL(target.href);
 
-        trackProductClickGA4(product, finalUrl);
+        console.log("Redirecting with UTM:", finalUrl);
+
+        // ส่ง GA4
+        gtag("event", "live_product_click", {
+            original_url: target.href,
+            final_url: finalUrl,
+            broadcastId: broadcastId,
+            campaignKey: campaignKey
+        });
 
         window.location.href = finalUrl;
-    });
-
+    }
 });
 </script>
 
