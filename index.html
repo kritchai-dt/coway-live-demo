@@ -96,73 +96,49 @@
   </script>
 
   <script>
-/* =============================
-   Read Params
-============================= */
+/* อ่านค่าจาก URL */
 const qs = new URLSearchParams(window.location.search);
+const campaignKey = qs.get("campaignKey") || "live";
 const broadcastId = qs.get("broadcastId") || "";
 const orderCallBackId = qs.get("orderCallBackId") || "";
-const campaignKey = qs.get("campaignKey") || "";
 
-/* =============================
-   Build URL + UTM
-============================= */
-function buildCowayURL(prd) {
-  return `https://www.coway.co.th/th/products/${prd.toLowerCase()}`;
+/* Function build UTM */
+function buildTrackedURL(prdCode) {
+    const url = new URL(`https://www.coway.co.th/th/products/${prdCode.toLowerCase()}`);
+
+    url.searchParams.set("utm_source", "livecommerce");
+    url.searchParams.set("utm_medium", "shoplive");
+    url.searchParams.set("utm_campaign", campaignKey);
+
+    if (broadcastId) url.searchParams.set("broadcastId", broadcastId);
+    if (orderCallBackId) url.searchParams.set("orderCallBackId", orderCallBackId);
+
+    return url.toString();
 }
 
-function addUTM(url) {
-  const u = new URL(url);
-  u.searchParams.set("utm_source", "livecommerce");
-  u.searchParams.set("utm_medium", "shoplive");
-  u.searchParams.set("utm_campaign", campaignKey || "live");
+/* ============ KEY ============= */
+/* ดักคลิกสินค้าผ่าน Shoplive SDK */
+cloud.shoplive.on("GOODS_CLICK", function(data) {
+    console.log("GOODS_CLICK EVENT:", data);
 
-  if (broadcastId) u.searchParams.set("broadcastId", broadcastId);
-  if (orderCallBackId) u.searchParams.set("orderCallBackId", orderCallBackId);
+    const prd = data?.goods?.code;   // ← ได้ product code แบบแท้จริงจาก Shoplive
+    if (!prd) return;
 
-  return u.toString();
-}
+    const finalURL = buildTrackedURL(prd);
 
-/* =============================
-   KEY: Capture click from anywhere
-============================= */
-window.addEventListener(
-  "click",
-  function (e) {
-    let el = e.target;
+    console.log("Redirect with UTM →", finalURL);
 
-    /* Traverse Shadow DOM + nested parents */
-    while (el) {
-      if (el.dataset && el.dataset.prdcode) {
-        
-        e.stopPropagation();
-        e.preventDefault();
+    /* GA4 */
+    gtag("event", "live_product_click", {
+        product_code: prd,
+        final_url: finalURL,
+        campaignKey,
+        broadcastId
+    });
 
-        const prd = el.dataset.prdcode;
-        const base = buildCowayURL(prd);
-        const finalURL = addUTM(base);
-
-        console.log("Redirect UTM →", finalURL);
-
-        gtag("event", "live_product_click", {
-          product_code: prd,
-          final_url: finalURL,
-          broadcastId,
-          campaignKey
-        });
-
-        window.location.href = finalURL;
-        return;
-      }
-
-      /* Shadow DOM */
-      if (el.parentNode) el = el.parentNode;
-      else if (el.host) el = el.host;
-      else break;
-    }
-  },
-  true  // <-- KEY: useCapture = TRUE !!!
-);
+    /* Redirect */
+    window.location.href = finalURL;
+});
 </script>
 
 </body>
