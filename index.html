@@ -96,15 +96,14 @@
   </script>
 
   <script>
-/* อ่านค่าจาก URL */
 const qs = new URLSearchParams(window.location.search);
 const campaignKey = qs.get("campaignKey") || "live";
 const broadcastId = qs.get("broadcastId") || "";
 const orderCallBackId = qs.get("orderCallBackId") || "";
 
-/* Function build UTM */
+/* Build URL with UTM */
 function buildTrackedURL(prdCode) {
-    const url = new URL(`https://www.coway.co.th/th/products/${prdCode.toLowerCase()}`);
+    const url = new URL(`https://www.coway.co.th/th/products/${prdCode}`);
 
     url.searchParams.set("utm_source", "livecommerce");
     url.searchParams.set("utm_medium", "shoplive");
@@ -116,28 +115,33 @@ function buildTrackedURL(prdCode) {
     return url.toString();
 }
 
-/* ============ KEY ============= */
-/* ดักคลิกสินค้าผ่าน Shoplive SDK */
-cloud.shoplive.on("GOODS_CLICK", function(data) {
-    console.log("GOODS_CLICK EVENT:", data);
+/* ---- Listen to Shoplive iframe messages ---- */
+window.addEventListener("message", function(event) {
+    if (!event.data) return;
 
-    const prd = data?.goods?.code;   // ← ได้ product code แบบแท้จริงจาก Shoplive
-    if (!prd) return;
+    const msg = event.data;
 
-    const finalURL = buildTrackedURL(prd);
+    /* Shoplive sends goods click event like this */
+    if (msg.type === "goods" || msg.action === "goodsClick") {
+        const prd = msg.goods?.code || msg.data?.code;
 
-    console.log("Redirect with UTM →", finalURL);
+        console.log("SHOPLIVE GOODS CLICK:", msg);
 
-    /* GA4 */
-    gtag("event", "live_product_click", {
-        product_code: prd,
-        final_url: finalURL,
-        campaignKey,
-        broadcastId
-    });
+        if (prd) {
+            const finalUrl = buildTrackedURL(prd);
 
-    /* Redirect */
-    window.location.href = finalURL;
+            console.log("Redirect with UTM →", finalUrl);
+
+            gtag("event", "live_product_click", {
+                product_code: prd,
+                campaignKey,
+                broadcastId,
+                final_url: finalUrl
+            });
+
+            window.location.href = finalUrl;
+        }
+    }
 });
 </script>
 
