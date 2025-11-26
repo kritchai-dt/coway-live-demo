@@ -96,52 +96,72 @@
   </script>
 
   <script>
-/* อ่านค่าจาก URL */
-const params = new URLSearchParams(window.location.search);
-const broadcastId = params.get("broadcastId") || "";
-const orderCallBackId = params.get("orderCallBackId") || "";
-const campaignKey = params.get("campaignKey") || "";
+/* =============================
+   Read Tracking Params
+============================= */
+const qs = new URLSearchParams(window.location.search);
+const broadcastId = qs.get("broadcastId") || "";
+const orderCallBackId = qs.get("orderCallBackId") || "";
+const campaignKey = qs.get("campaignKey") || "";
 
-/* ฟังก์ชันเพิ่ม UTM */
-function buildTrackedURL(original) {
-    const url = new URL(original);
+/* =============================
+   Build Coway Product URL
+============================= */
+function buildCowayProductURL(productCode) {
+    if (!productCode) return null;
 
-    url.searchParams.set("utm_source", "livecommerce");
-    url.searchParams.set("utm_medium", "shoplive");
-    url.searchParams.set("utm_campaign", campaignKey || "live");
-
-    if (broadcastId) url.searchParams.set("broadcastId", broadcastId);
-    if (orderCallBackId) url.searchParams.set("orderCallBackId", orderCallBackId);
-
-    return url.toString();
+    const slug = productCode.toLowerCase(); 
+    return `https://www.coway.co.th/th/products/${slug}`;
 }
 
-/* ดักคลิกสินค้าใน DOM */
-document.addEventListener("click", function(e) {
-    const target = e.target.closest("a");
+/* =============================
+   Add UTM to URL
+============================= */
+function addUTM(url) {
+    const u = new URL(url);
+    
+    u.searchParams.set("utm_source", "livecommerce");
+    u.searchParams.set("utm_medium", "shoplive");
+    u.searchParams.set("utm_campaign", campaignKey || "live");
 
-    if (!target) return;
+    if (broadcastId) u.searchParams.set("broadcastId", broadcastId);
+    if (orderCallBackId) u.searchParams.set("orderCallBackId", orderCallBackId);
 
-    // ตรวจสอบว่าเป็นสินค้า (Shoplive ใช้ CSS class ข้างล่าง)
-    if (target.classList.contains("shoplive-goods-item") ||
-        target.href.includes("coway.co.th/th/products")) {
+    return u.toString();
+}
 
-        e.preventDefault(); // กัน redirect เดิม
+/* =============================
+   Hook Click on Shoplive Products
+============================= */
+document.addEventListener("click", (e) => {
+    const item = e.target.closest("li.wrap-displaying-goods");
 
-        const finalUrl = buildTrackedURL(target.href);
+    if (!item) return;
 
-        console.log("Redirecting with UTM:", finalUrl);
+    // Product Code from Shoplive DOM
+    const productCode = item.dataset.prdcode;
 
-        // ส่ง GA4
-        gtag("event", "live_product_click", {
-            original_url: target.href,
-            final_url: finalUrl,
-            broadcastId: broadcastId,
-            campaignKey: campaignKey
-        });
-
-        window.location.href = finalUrl;
+    if (!productCode) {
+        console.warn("Shoplive item has no product code");
+        return;
     }
+
+    // Build URL
+    const baseURL = buildCowayProductURL(productCode);
+    const finalURL = addUTM(baseURL);
+
+    e.preventDefault();
+
+    console.log("Redirecting →", finalURL);
+
+    gtag("event", "live_product_click", {
+        product_code: productCode,
+        final_url: finalURL,
+        broadcastId,
+        campaignKey
+    });
+
+    window.location.href = finalURL;
 });
 </script>
 
