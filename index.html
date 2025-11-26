@@ -97,7 +97,7 @@
 
   <script>
 /* =============================
-   Read Tracking Params
+   Read Params
 ============================= */
 const qs = new URLSearchParams(window.location.search);
 const broadcastId = qs.get("broadcastId") || "";
@@ -105,67 +105,64 @@ const orderCallBackId = qs.get("orderCallBackId") || "";
 const campaignKey = qs.get("campaignKey") || "";
 
 /* =============================
-   Build Coway Product URL
+   Build URL + UTM
 ============================= */
-function buildCowayProductURL(productCode) {
-    const slug = productCode.toLowerCase();
-    return `https://www.coway.co.th/th/products/${slug}`;
+function buildCowayURL(prd) {
+  return `https://www.coway.co.th/th/products/${prd.toLowerCase()}`;
 }
 
-/* =============================
-   Add UTM to URL
-============================= */
 function addUTM(url) {
-    const u = new URL(url);
-    u.searchParams.set("utm_source", "livecommerce");
-    u.searchParams.set("utm_medium", "shoplive");
-    u.searchParams.set("utm_campaign", campaignKey || "live");
+  const u = new URL(url);
+  u.searchParams.set("utm_source", "livecommerce");
+  u.searchParams.set("utm_medium", "shoplive");
+  u.searchParams.set("utm_campaign", campaignKey || "live");
 
-    if (broadcastId) u.searchParams.set("broadcastId", broadcastId);
-    if (orderCallBackId) u.searchParams.set("orderCallBackId", orderCallBackId);
+  if (broadcastId) u.searchParams.set("broadcastId", broadcastId);
+  if (orderCallBackId) u.searchParams.set("orderCallBackId", orderCallBackId);
 
-    return u.toString();
+  return u.toString();
 }
 
 /* =============================
-   MutationObserver → จับสินค้าถูก render
+   KEY: Capture click from anywhere
 ============================= */
-const observer = new MutationObserver(() => {
-    const items = document.querySelectorAll("li.wrap-displaying-goods");
+window.addEventListener(
+  "click",
+  function (e) {
+    let el = e.target;
 
-    items.forEach(item => {
-        if (item.dataset._trackingBound) return;
+    /* Traverse Shadow DOM + nested parents */
+    while (el) {
+      if (el.dataset && el.dataset.prdcode) {
+        
+        e.stopPropagation();
+        e.preventDefault();
 
-        item.dataset._trackingBound = "true";
+        const prd = el.dataset.prdcode;
+        const base = buildCowayURL(prd);
+        const finalURL = addUTM(base);
 
-        item.addEventListener("click", e => {
-            e.preventDefault();
+        console.log("Redirect UTM →", finalURL);
 
-            const prd = item.dataset.prdcode;
-            if (!prd) return;
-
-            const base = buildCowayProductURL(prd);
-            const finalURL = addUTM(base);
-
-            console.log("Redirect UTM →", finalURL);
-
-            gtag("event", "live_product_click", {
-                product_code: prd,
-                final_url: finalURL,
-                broadcastId,
-                campaignKey
-            });
-
-            window.location.href = finalURL;
+        gtag("event", "live_product_click", {
+          product_code: prd,
+          final_url: finalURL,
+          broadcastId,
+          campaignKey
         });
-    });
-});
 
-/* เริ่มจับการเปลี่ยน DOM */
-observer.observe(document.body, {
-    childList: true,
-    subtree: true
-});
+        window.location.href = finalURL;
+        return;
+      }
+
+      /* Shadow DOM */
+      if (el.parentNode) el = el.parentNode;
+      else if (el.host) el = el.host;
+      else break;
+    }
+  },
+  true  // <-- KEY: useCapture = TRUE !!!
+);
 </script>
 
 </body>
