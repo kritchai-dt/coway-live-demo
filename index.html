@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -15,7 +14,7 @@
   </script>
 
   <!-- Shoplive SDK -->
- <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
+  <script type="text/javascript" src="https://static.shoplive.cloud/shoplive.js"></script>
 
   <!-- NoSleep.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/no-sleep/0.12.0/NoSleep.min.js"></script>
@@ -29,6 +28,7 @@
       overflow-x: hidden;
     }
 
+    /* DEFAULT shoplive responsive behavior */
     #shoplive-overall-area {
       width: 100%;
       display: block;
@@ -38,57 +38,62 @@
 
 <body>
 
+  <!-- Shoplive container -->
   <div id="shoplive-overall-area"></div>
 
-<script>
-/* อ่านค่าจาก URL */
-const params = new URLSearchParams(window.location.search);
-const broadcastId = params.get("broadcastId") || "";
-const orderCallBackId = params.get("orderCallBackId") || "";
-const campaignKey = params.get("campaignKey") || "";
+  <script>
+    /* Init Shoplive */
+    cloud.shoplive.init({
+      accessKey: "Bnh7fCrVX2SAmlYaqMxM"
+    });
 
-/* ฟังก์ชันเพิ่ม UTM */
-function buildTrackedURL(original) {
-    const url = new URL(original);
+    /* Render default UI */
+    window.addEventListener("DOMContentLoaded", () => {
+      cloud.shoplive.setOverall("shoplive-overall-area");
+    });
 
-    url.searchParams.set("utm_source", "livecommerce");
-    url.searchParams.set("utm_medium", "shoplive");
-    url.searchParams.set("utm_campaign", campaignKey || "live");
+    /* Read Tracking Params */
+    const params = new URLSearchParams(window.location.search);
+    const trackingData = {
+      utm_source: params.get("utm_source"),
+      utm_medium: params.get("utm_medium"),
+      utm_campaign: params.get("utm_campaign"),
+      broadcastId: params.get("broadcastId"),
+      orderCallBackId: params.get("orderCallBackId")
+    };
+    gtag("event", "livecommerce_pageview", trackingData);
 
-    if (broadcastId) url.searchParams.set("broadcastId", broadcastId);
-    if (orderCallBackId) url.searchParams.set("orderCallBackId", orderCallBackId);
+    /* Detect mobile */
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    return url.toString();
-}
+    /* NoSleep only for mobile */
+    let noSleepEnabled = false;
+    let noSleep;
 
-/* ดักคลิกสินค้าใน DOM */
-document.addEventListener("click", function(e) {
-    const target = e.target.closest("a");
+    if (isMobile) {
+      noSleep = new NoSleep();
 
-    if (!target) return;
+      function enableNoSleep() {
+        if (!noSleepEnabled) {
+          noSleep.enable();
+          noSleepEnabled = true;
+        }
+      }
 
-    // ตรวจสอบว่าเป็นสินค้า (Shoplive ใช้ CSS class ข้างล่าง)
-    if (target.classList.contains("shoplive-goods-item") ||
-        target.href.includes("coway.co.th/th/products")) {
+      /* require a user gesture */
+      document.addEventListener("touchstart", enableNoSleep, { once: true });
+      document.addEventListener("click", enableNoSleep, { once: true });
 
-        e.preventDefault(); // กัน redirect เดิม
-
-        const finalUrl = buildTrackedURL(target.href);
-
-        console.log("Redirecting with UTM:", finalUrl);
-
-        // ส่ง GA4
-        gtag("event", "live_product_click", {
-            original_url: target.href,
-            final_url: finalUrl,
-            broadcastId: broadcastId,
-            campaignKey: campaignKey
-        });
-
-        window.location.href = finalUrl;
+      /* disable when playback ends */
+      cloud.shoplive.on("ENDED", () => {
+        if (noSleepEnabled) {
+          noSleep.disable();
+          noSleepEnabled = false;
+        }
+      });
     }
-});
-</script>
+
+  </script>
 
 </body>
 </html>
